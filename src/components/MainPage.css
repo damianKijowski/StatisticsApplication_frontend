@@ -1,0 +1,29 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    background:#124E66 ;
+}
+
+.MuiContainer-root {
+    margin-top: 20px;
+}
+
+.MuiGrid-item {
+    display: flex;
+}
+
+.MuiPaper-root {
+    border-radius: 8px;
+}
+
+.MuiListItem-root {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.MuiListItem-root:hover {
+    background-color: #124E66;
+}
