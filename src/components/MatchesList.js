@@ -1,134 +1,93 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {
-    Paper,
-    CircularProgress,
-    List,
-    ListItem,
-    ListItemAvatar,
-    Avatar,
-    Divider,
-    Typography, Box
-} from '@mui/material';
-
+import { useNavigate } from 'react-router-dom';
 
 const MatchesList = () => {
     const [matches, setMatches] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [groupedMatches, setGroupedMatches] = useState({});
+    const navigate = useNavigate();
 
-
+    const saturday = new Date(2024, 11, 15); // Month is 0-indexed, so 11 = December
+    const date = saturday.toISOString().split('T')[0]; // Format to YYYY-MM-DD
+    const sunday = new Date(2024, 11, 16);
+    const date2 = sunday.toISOString().split('T')[0];
+    const handleMatchClick = (id) => {
+        navigate(`/match/${id}`); // Navigate to the match details page with the match ID
+    };
     useEffect(() => {
-        const fetchMatches = async () => {
-            try {
-                 const leagues = ['BSA', 'ELC', 'PL', 'CL', 'EC', 'FL1', 'BL1', 'SA', 'DED', 'PPL', 'CLI', 'PD', 'WC'];
-                // const leagues = ['BL1', "PL"];
-                const date = new Date().toISOString().split('T')[0];
-                // Fetch matches for each league dynamically
-                const leagueMatches = await Promise.all(
-                    leagues.map(async (league) => {
-                        // Get today's date in YYYY-MM-DD format inline
-                        const url = `http://localhost:8080/matches/${league}/dateFrom=${date}/dateTo=${date}`;
-                        console.log("URL: " + url);
-                        const response = await axios.get(url);
+        const fetchLeagues = async () => {
+            console.log("date: " + date);
+            const response = await axios.get(`http://localhost:8080/matches/dateFrom=${date}/dateTo=${date2}`) // Replace with your API endpoint
 
-                        return {
-                            leagueName: league,  // Store the league abbreviation (e.g., PL, BSA, etc.)
-                            matches: response.data.matches || [], // Matches for this league
-                        };
-                    })
-                );
-
-                // Filter out leagues with no matches for today
-                const filteredMatches = leagueMatches.filter(league => league.matches.length > 0);
-
-                setMatches(filteredMatches);
-                setLoading(false);
-            } catch (err) {
-                setError('Failed to load matches.');
-                setLoading(false);
-            }
-        };
-
-        fetchMatches();
-    }, []);
-
-    if (loading) {
-        return (
-            <Paper style={{padding: '20px', textAlign: 'center'}}>
-                <CircularProgress/>
-            </Paper>
-        );
-    }
-
-    if (error) {
-        return (
-            <Paper style={{padding: '20px', textAlign: 'center'}}>
-                <Typography variant="h6">{error}</Typography>
-            </Paper>
-        );
-    }
+            const fetchedMatches = response.data.matches;
+            setMatches(fetchedMatches);
+            console.log(response);
+            // Group matches by competition.code
+            const grouped = fetchedMatches.reduce((acc, match) => {
+                const code = match.competition.code;
+                if (!acc[code]) {
+                    acc[code] = [];
+                }
+                acc[code].push(match);
+                return acc;
+            }, {});
+            setGroupedMatches(grouped);
+        }
+            fetchLeagues();
+    }, [date,date2]);
 
     return (
-        <div>
-            {matches.map((leagueMatches, index) => (
-                <div key={index} style={{marginBottom: '20px'}}>
-                    <Typography variant="h6" style={{marginBottom: '10px', fontWeight: 'bold'}}>
-                        {leagueMatches.leagueName} <span style={{color: 'blue'}}>⚽</span>
-                    </Typography>
-                    <Paper elevation={3} style={{padding: '10px'}}>
-                        <List>
-                            {leagueMatches.matches.map((match, matchIndex) => (
-                                <div key={matchIndex}>
-                                    <ListItem>
-
-                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                            <ListItemAvatar>
-                                                <Avatar alt={match.homeTeam.name} src={match.homeTeam.crest}/>
-                                            </ListItemAvatar>
-                                            <Typography variant="body1">{match.homeTeam.name}</Typography>
-                                        </Box>
-
-
-                                        <Typography sx={{margin: '0 8px'}} variant="body1">
-                                            vs
-                                        </Typography>
-
-
-                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                            <Typography variant="body1">{match.awayTeam.name}</Typography>
-                                            <ListItemAvatar>
-                                                <Avatar alt={match.awayTeam.name} src={match.awayTeam.crest}/>
-                                            </ListItemAvatar>
-                                        </Box>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            justifyContent: 'flex-end', // Push content to the bottom of this box
-                                            position: 'absolute',
-                                            right: 0, // Align to the far-right edge
-                                            top: 0,
-                                            bottom: 0, // Stretch vertically
-                                        }}>
-                                            <Typography variant="body1" sx={{textAlign: 'right'}}>
-                                                {match.score.fullTime.home} - {match.score.fullTime.away}
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary" sx={{textAlign: 'right'}}>
-                                                Status: {match.status}
-                                            </Typography>
-                                        </Box>
-                                    </ListItem>
-                                    <Divider/>
-                                    <Divider/>
-                                </div>
+        <div style={{ padding: '20px', backgroundColor: 'white' }}>
+            <h1>Matches</h1>
+            {matches.length === 0 ? (
+                <p>Loading matches...</p>
+            ) : (
+                Object.keys(groupedMatches).map((code) => (
+                    <div key={code} style={{ marginBottom: '30px', padding: '15px', borderRadius: '8px' }}>
+                        <h2 style={{ marginBottom: '10px' }}>{code}</h2>
+                        <ul style={{ listStyleType: 'none', padding: 0 }}>
+                            {groupedMatches[code].map((match) => (
+                                <li
+                                    key={match.id}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '10px',
+                                        borderBottom: '1px solid #334455',
+                                    }}
+                                    onClick={() => handleMatchClick(match.id)}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <img
+                                            src={match.homeTeam.crest}
+                                            alt={`${match.homeTeam.name} crest`}
+                                            style={{ width: '30px', marginRight: '10px' }}
+                                        />
+                                        <span style={{ marginRight: '10px' }}>{match.homeTeam.name}</span>
+                                        <span style={{ margin: '0 10px' }}>vs</span>
+                                        <span style={{ marginRight: '10px' }}>{match.awayTeam.name}</span>
+                                        <img
+                                            src={match.awayTeam.crest}
+                                            alt={`${match.awayTeam.name} crest`}
+                                            style={{ width: '30px', marginLeft: '10px' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <span style={{ fontSize: '14px', marginRight: '10px' }}>{match.score.fullTime.home} - {match.score.fullTime.away}</span>
+                                        <small style={{ display: 'block', fontSize: '12px' }}>
+                                            {new Date(match.utcDate).toLocaleString()}
+                                        </small>
+                                    </div>
+                                </li>
                             ))}
-                        </List>
-                    </Paper>
-                </div>
-            ))}
+                        </ul>
+                    </div>
+                ))
+            )}
         </div>
     );
 };
+
 
 export default MatchesList;

@@ -12,6 +12,7 @@ useEffect(() => {
     const fetchLeagues = async () => {
         try {
             const response = await axios.get('http://localhost:8080/competition'); // Replace with your API endpoint
+            console.log(response.data);
             setLeagues(response.data); // Assuming response.data contains an array of leagues
             setLoading(false);
         } catch (err) {
