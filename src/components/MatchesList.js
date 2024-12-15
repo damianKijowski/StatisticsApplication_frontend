@@ -1,37 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import {useEffect, useState} from 'react';
 import axios from 'axios';
 
-const MatchesList = ({league, onSelectMatch}) => {
+const MatchesList = ({ onSelectedMatch }) => {
     const [matches, setMatches] = useState([]);
     const [groupedMatches, setGroupedMatches] = useState({});
 
-    const saturday = new Date(2024, 11, 15); // Month is 0-indexed, so 11 = December
-    const date = saturday.toISOString().split('T')[0]; // Format to YYYY-MM-DD
+    const saturday = new Date(2024, 11, 15);
+    const date = saturday.toISOString().split('T')[0];
     const sunday = new Date(2024, 11, 16);
     const date2 = sunday.toISOString().split('T')[0];
 
     useEffect(() => {
         const fetchLeagues = async () => {
             console.log("date: " + date);
-            const response = await axios.get(`http://localhost:8080/matches/dateFrom=${date}/dateTo=${date2}`) // Replace with your API endpoint
-
+            const response = await axios.get(`http://localhost:8080/matches/dateFrom=${date}/dateTo=${date2}`);
             const fetchedMatches = response.data.matches;
+
             setMatches(fetchedMatches);
-            console.log(response);
-            // Group matches by competition.code
+
             const grouped = fetchedMatches.reduce((acc, match) => {
                 const code = match.competition.code;
-                if (!acc[code]) {
-                    acc[code] = [];
-                }
+                if (!acc[code]) acc[code] = [];
                 acc[code].push(match);
                 return acc;
             }, {});
             setGroupedMatches(grouped);
-        }
-            fetchLeagues();
-    }, [date,date2]);
-
+        };
+        fetchLeagues();
+    }, [date, date2]);
 
     return (
         <div style={{ padding: '20px', backgroundColor: 'white' }}>
@@ -46,7 +43,10 @@ const MatchesList = ({league, onSelectMatch}) => {
                             {groupedMatches[code].map((match) => (
                                 <li
                                     key={match.id}
-                                    onClick={() => onSelectMatch(match.id)}
+                                    onClick={() => {
+                                        console.log("Match clicked:", match.id); // Debugging log
+                                        onSelectedMatch(match.id);
+                                    }}// Use the correct prop here
                                     style={{
                                         cursor: 'pointer',
                                         display: 'flex',
@@ -88,6 +88,4 @@ const MatchesList = ({league, onSelectMatch}) => {
         </div>
     );
 };
-
-
 export default MatchesList;

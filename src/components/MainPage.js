@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Container, Grid } from '@mui/material';
 import LeaguesList from './LeaguesList';
 import LeagueMatches from './LeagueMatches';
-import MatchesList from "./MatchesList";
+import MatchesList from './MatchesList';
+import MatchDetails from './MatchDetails';
 
 const MainPage = () => {
     const [selectedLeague, setSelectedLeague] = useState(null);
@@ -13,9 +14,10 @@ const MainPage = () => {
         setSelectedMatchId(null); // Reset match selection when league changes
     };
 
-    // const handleMatchSelect = (matchId) => {
-    //     setSelectedMatchId(matchId);
-    // };
+    const handleMatchSelect = (matchId) => {
+        console.log("Selected Match ID:", matchId);
+        setSelectedMatchId(matchId); // Set the selected match ID
+    };
 
     return (
         <Container maxWidth="lg" style={{ padding: '20px', backgroundColor: '#f9f9f9' }}>
@@ -25,14 +27,17 @@ const MainPage = () => {
                     <LeaguesList onSelectLeague={handleLeagueSelect} />
                 </Grid>
 
-                {/* Middle Panel: MatchesList or LeagueMatches */}
+                {/* Middle Panel: MatchesList, LeagueMatches, or MatchDetails */}
                 <Grid item xs={9}>
-                    {selectedLeague ? (
+                    {selectedMatchId ? (
+                        // Render MatchDetails when a match is selected
+                        <MatchDetails matchId={selectedMatchId} />
+                    ) : selectedLeague ? (
                         // Render LeagueMatches when a league is selected
                         <LeagueMatches leagueCode={selectedLeague} />
                     ) : (
                         // Default view: Render MatchesList
-                        <MatchesList />
+                        <MatchesList onSelectedMatch={handleMatchSelect} />
                     )}
                 </Grid>
             </Grid>
