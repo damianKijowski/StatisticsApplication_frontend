@@ -1,71 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
-const MatchDetails = () => {
-    const { id } = useParams(); // Get match ID from the URL
-    const [match, setMatch] = useState(null);
+const MatchDetails = ({ matchId }) => {
+    const [matchDetails, setMatchDetails] = useState(null);
 
     useEffect(() => {
-        // Fetch data for the specific match
-        axios.get(`http://localhost:8080/matches/${id}`) // Replace with your backend endpoint
-            .then((response) => {
-                setMatch(response.data); // Set match data
-            })
-            .catch((error) => {
+        const fetchMatchDetails = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8080/matches/${matchId}`);
+                setMatchDetails(response.data);
+            } catch (error) {
                 console.error('Error fetching match details:', error);
-            });
-    }, [id]);
+            }
+        };
 
-    if (!match) {
-        return (
-            <div
-                style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '100vh',
-                    backgroundColor: '#0a1a2a',
-                    color: '#fff',
-                }}
-            >
-                <p>Loading match details...</p>
-            </div>
-        );
-    }
+        fetchMatchDetails();
+    }, [matchId]);
+
+    if (!matchDetails) return <p>Loading match details...</p>;
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh',
-                backgroundColor: '#0a1a2a',
-                color: '#fff',
-                textAlign: 'center',
-            }}
-        >
+        <div style={{ padding: '20px', backgroundColor: 'white' }}>
             <h1>Match Details</h1>
-            <h2>
-                {match.homeTeam.name} vs {match.awayTeam.name}
-            </h2>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0' }}>
-                <img
-                    src={match.homeTeam.crest}
-                    alt={match.homeTeam.name}
-                    style={{ width: '80px', marginRight: '20px' }}
-                />
-                <img
-                    src={match.awayTeam.crest}
-                    alt={match.awayTeam.name}
-                    style={{ width: '80px' }}
-                />
+            <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+                <div style={{ textAlign: 'center' }}>
+                    <img src={matchDetails.homeTeam.crest} alt={matchDetails.homeTeam.name} style={{ width: '80px' }} />
+                    <h2>{matchDetails.homeTeam.name}</h2>
+                </div>
+                <div>
+                    <h3 style={{ textAlign: 'center', padding: '20px' }}>
+                        {matchDetails.score.fullTime.home} - {matchDetails.score.fullTime.away}
+                    </h3>
+                    <p>{new Date(matchDetails.utcDate).toLocaleString()}</p>
+                    <p style={{textAlign: 'center'}}>Status: {matchDetails.status}</p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                    <img src={matchDetails.awayTeam.crest} alt={matchDetails.awayTeam.name} style={{ width: '80px' }} />
+                    <h2>{matchDetails.awayTeam.name}</h2>
+                </div>
             </div>
-            <p>Status: {match.status}</p>
-            <p>Date: {new Date(match.utcDate).toLocaleString()}</p>
-            <p>Score: {match.score.fullTime.home} - {match.score.fullTime.away}</p>
         </div>
     );
 };

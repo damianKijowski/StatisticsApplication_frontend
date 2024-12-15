@@ -1,19 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
-const MatchesList = () => {
+const MatchesList = ({league, onSelectMatch}) => {
     const [matches, setMatches] = useState([]);
     const [groupedMatches, setGroupedMatches] = useState({});
-    const navigate = useNavigate();
 
     const saturday = new Date(2024, 11, 15); // Month is 0-indexed, so 11 = December
     const date = saturday.toISOString().split('T')[0]; // Format to YYYY-MM-DD
     const sunday = new Date(2024, 11, 16);
     const date2 = sunday.toISOString().split('T')[0];
-    const handleMatchClick = (id) => {
-        navigate(`/match/${id}`); // Navigate to the match details page with the match ID
-    };
+
     useEffect(() => {
         const fetchLeagues = async () => {
             console.log("date: " + date);
@@ -36,6 +32,7 @@ const MatchesList = () => {
             fetchLeagues();
     }, [date,date2]);
 
+
     return (
         <div style={{ padding: '20px', backgroundColor: 'white' }}>
             <h1>Matches</h1>
@@ -49,14 +46,15 @@ const MatchesList = () => {
                             {groupedMatches[code].map((match) => (
                                 <li
                                     key={match.id}
+                                    onClick={() => onSelectMatch(match.id)}
                                     style={{
+                                        cursor: 'pointer',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'space-between',
                                         padding: '10px',
                                         borderBottom: '1px solid #334455',
                                     }}
-                                    onClick={() => handleMatchClick(match.id)}
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center' }}>
                                         <img
@@ -74,7 +72,9 @@ const MatchesList = () => {
                                         />
                                     </div>
                                     <div>
-                                        <span style={{ fontSize: '14px', marginRight: '10px' }}>{match.score.fullTime.home} - {match.score.fullTime.away}</span>
+                                        <span style={{ fontSize: '14px', marginRight: '10px' }}>
+                                            {match.score.fullTime.home} - {match.score.fullTime.away}
+                                        </span>
                                         <small style={{ display: 'block', fontSize: '12px' }}>
                                             {new Date(match.utcDate).toLocaleString()}
                                         </small>

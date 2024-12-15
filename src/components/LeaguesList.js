@@ -44,7 +44,7 @@ return (
     <Paper elevation={3} style={{ padding: '20px', height: '100vh', overflowY: 'auto' }}>
         <List>
             {leagues.map((league, index) => (
-                <ListItem button key={index} onClick={() => onSelectLeague(league)}>
+                <ListItem button key={index} onClick={() => onSelectLeague(league.code)}>
                     <ListItemAvatar>
                         <Avatar alt={league.name}  src={league.name === "FIFA World Cup" ? league.emblem : league.area.flag}  />
                     </ListItemAvatar>
