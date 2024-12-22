@@ -2,12 +2,11 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import MatchDetails from './MatchDetails'; // Import Twojego komponentu
 import IconButton from '@mui/material/IconButton';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'; // Import ikony powrotu
-
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 const MatchesList = () => {
     const [matches, setMatches] = useState([]);
     const [groupedMatches, setGroupedMatches] = useState({});
-    const [selectedMatchId, setSelectedMatchId] = useState(null); // Stan dla wybranego meczu
+    const [selectedMatchId, setSelectedMatchId] = useState(null);
 
     const saturday = new Date(2024, 11, 16);
     const date = saturday.toISOString().split('T')[0];
