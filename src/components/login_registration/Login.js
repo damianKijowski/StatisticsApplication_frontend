@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import "./Login.css";
 import axios from "axios";
-import {TextField, Button, Typography, Box, Paper} from "@mui/material";
-import {useNavigate} from 'react-router-dom';
+import { TextField, Button, Typography, Box, Paper } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
-
-function Login() {
+function Login({ onLogin }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [setErrorMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
+
     // Handle form input changes
     const handleUsernameChange = (e) => {
         setUsername(e.target.value);
@@ -23,23 +23,26 @@ function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
 
-
         const requestData = {
             name: username,
             password: password,
-        }
+        };
 
         try {
             console.log(requestData);
-            const response = await axios.post('http://localhost:8080/user/login', requestData);
+            const response = await axios.post("http://localhost:8080/user/login", requestData);
 
-            // Handle success (you can redirect or update state)
+            // Handle success - assuming backend returns a token or user info
             console.log("Login successful:", response.data);
-            if(response === "ok"){
-                console.log(response);
+            console.log("DATA: " + response.data)
+            if (response.data.id !== null) {
+                const user = response.data;
+                localStorage.setItem("user", JSON.stringify(user));
+                console.log(user);
+                onLogin(user);
+                alert("Login successful!");
+                navigate("/MainPage");
             }
-
-            navigate('/MainPage');
         } catch (error) {
             // Handle error (e.g., incorrect credentials)
             console.error("Login failed:", error);
@@ -71,15 +74,11 @@ function Login() {
                         value={password}
                         onChange={handlePasswordChange}
                     />
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        type="submit"
-                        className="login-button"
-                    >
+                    <Button variant="contained" color="primary" type="submit" className="login-button">
                         Login
                     </Button>
                 </form>
+                {errorMessage && <Typography color="error">{errorMessage}</Typography>}
             </Paper>
         </Box>
     );

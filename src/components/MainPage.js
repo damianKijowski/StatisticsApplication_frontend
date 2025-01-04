@@ -7,7 +7,7 @@ import MatchesList from './MatchesList';
 import MatchDetails from './MatchDetails';
 import PersonIcon from '@mui/icons-material/Person';
 
-const MainPage = () => {
+const MainPage = ({ loggedInUser }) => {
     const [selectedLeague, setSelectedLeague] = useState(null);
     const [selectedMatchId, setSelectedMatchId] = useState(null);
 
@@ -16,18 +16,20 @@ const MainPage = () => {
         setSelectedMatchId(null); // Reset match selection when league changes
     };
 
-    const handleMatchSelect = (matchId) => {
+    const handleMatchSelect = (matchId, loggedInUser) => {
         console.log('Selected Match ID:', matchId);
-        setSelectedMatchId(matchId); // Set the selected match ID
+        setSelectedMatchId(matchId);
     };
 
     const handleBack = () => {
         if (selectedMatchId) {
-            setSelectedMatchId(null); // Wracamy do widoku ligi
+            setSelectedMatchId(null); // Back to league view
         } else if (selectedLeague) {
-            setSelectedLeague(null); // Wracamy do listy lig
+            setSelectedLeague(null); // Back to leagues list
         }
     };
+
+    console.log("USER in matchDetails: " + loggedInUser)
 
     return (
         <div>
@@ -35,17 +37,14 @@ const MainPage = () => {
             <AppBar position="static" style={{ backgroundColor: '#6583f0' }}>
                 <Toolbar>
                     {/* Football Statistics Button */}
-                    <IconButton
-                        color="inherit"
-                        style={{ padding: '0 16px', borderRadius: '4px'}}
-                    >
-                        <Typography variant="h5" style={{ fontSize: '25px'}}>
+                    <IconButton color="inherit" style={{ padding: '0 16px', borderRadius: '4px' }}>
+                        <Typography variant="h5" style={{ fontSize: '25px' }}>
                             Football Statistics
                         </Typography>
                     </IconButton>
 
                     {/* User Icon Button */}
-                    <div style={{ flexGrow: 1 }} /> {/* Spacer to push PersonIcon to the right */}
+                    <div style={{ flexGrow: 1 }} />
                     <IconButton color="inherit">
                         <PersonIcon />
                     </IconButton>
@@ -70,14 +69,11 @@ const MainPage = () => {
                             </div>
                         ) : null}
                         {selectedMatchId ? (
-                            // Render MatchDetails when a match is selected
-                            <MatchDetails matchId={selectedMatchId} />
+                            <MatchDetails matchId={selectedMatchId} loggedInUser={loggedInUser} />
                         ) : selectedLeague ? (
-                            // Render LeagueMatches when a league is selected
                             <LeagueMatches leagueCode={selectedLeague} />
                         ) : (
-                            // Default view: Render MatchesList
-                            <MatchesList onSelectedMatch={handleMatchSelect} />
+                            <MatchesList onSelectedMatch={handleMatchSelect} loggedInUser={loggedInUser}  />
                         )}
                     </Grid>
                 </Grid>
