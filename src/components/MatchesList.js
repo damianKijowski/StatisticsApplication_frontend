@@ -12,7 +12,6 @@ const MatchesList = ({loggedInUser}) => {
     const date = saturday.toISOString().split('T')[0];
     const sunday = new Date(2024, 11, 17);
     const date2 = sunday.toISOString().split('T')[0];
-    console.log("User in matches list: " + loggedInUser)
     useEffect(() => {
         const fetchLeagues = async () => {
             const response = await axios.get(`http://localhost:8080/matches/dateFrom=${date}/dateTo=${date2}`);
