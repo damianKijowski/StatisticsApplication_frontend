@@ -4,9 +4,10 @@ import axios from "axios";
 import { TextField, Button, Typography, Box, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-function Login({ onLogin }) {
+function Register() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("")
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
 
@@ -18,37 +19,36 @@ function Login({ onLogin }) {
     const handlePasswordChange = (e) => {
         setPassword(e.target.value);
     };
-    const handleRegisterButton = (e) => {
-        navigate('/Register')
+
+    const handleEmailChange = (e) => {
+        setEmail(e.target.value);
+    }
+
+    const handleLoginClick = (e) => {
+        navigate("/")
     }
 
     // Handle form submission
-    const handleLogin = async (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
 
         const requestData = {
             name: username,
             password: password,
+            email: email
         };
 
         try {
-            console.log(requestData);
-            const response = await axios.post("http://localhost:8080/user/login", requestData);
-
-            // Handle success - assuming backend returns a token or user info
-            console.log("Login successful:", response.data);
-            console.log("DATA: " + response.data)
-            if (response.data.id !== null) {
-                const user = response.data;
-                localStorage.setItem("user", JSON.stringify(user));
-                console.log(user);
-                onLogin(user);
-                navigate("/MainPage");
+            const userExists = await axios.get(`http://localhost:8080/user/${email}`)
+            if(userExists !== 'ok'){
+                console.error(JSON.stringify(userExists.data));
             }
+            const response = await axios.post("http://localhost:8080/user/addUser", requestData);
+            console.log("Register successful:", response.data);
+            navigate("/Login");
+
         } catch (error) {
-            // Handle error (e.g., incorrect credentials)
-            console.error("Login failed:", error);
-            setErrorMessage("Invalid username or password.");
+            console.error("Register failed:", error);
         }
     };
 
@@ -56,9 +56,9 @@ function Login({ onLogin }) {
         <Box className="login-container">
             <Paper elevation={3} className="login-paper">
                 <Typography variant="h4" className="login-title">
-                    Login
+                    Register
                 </Typography>
-                <form onSubmit={handleLogin} className="login-form">
+                <form onSubmit={handleRegister} className="login-form">
                     <TextField
                         label="Username"
                         variant="outlined"
@@ -76,18 +76,26 @@ function Login({ onLogin }) {
                         value={password}
                         onChange={handlePasswordChange}
                     />
-                    <Button variant="contained" color="secondary" type="submit" className="login-button">
-                        Login
+                    <TextField
+                        label="Email"
+                        variant="outlined"
+                        type="email"
+                        fullWidth
+                        margin="normal"
+                        value={email}
+                        onChange={handleEmailChange}
+                    />
+                    <Button onClick={handleRegister} variant="contained" color="secondary" type="submit" className="login-button">
+                        Register
                     </Button>
-                    <Button onClick={handleRegisterButton} variant="contained" color="primary" type="submit" className="login-button">
-                        Go to Registration
+                    <Button onClick={handleLoginClick} variant="contained" color="primary" type="submit" className="login-button">
+                        Go to Login
                     </Button>
                 </form>
-
                 {errorMessage && <Typography color="error">{errorMessage}</Typography>}
             </Paper>
         </Box>
     );
 }
 
-export default Login;
+export default Register;

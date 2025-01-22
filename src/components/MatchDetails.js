@@ -14,7 +14,6 @@ import {
     AccordionDetails,
     Divider
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const MatchDetails = ({ matchId, loggedInUser }) => {
     const [matchDetails, setMatchDetails] = useState(null);
@@ -23,7 +22,7 @@ const MatchDetails = ({ matchId, loggedInUser }) => {
     const [comments, setComments] = useState([]);
     const [showLineup, setShowLineup] = useState(false);
     const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
-
+    const user = JSON.parse(localStorage.getItem('user'));
     // Fetch match details
     useEffect(() => {
         const fetchMatchDetails = async () => {
@@ -43,7 +42,7 @@ const MatchDetails = ({ matchId, loggedInUser }) => {
     useEffect(() => {
         const getMatchPrediction = async () => {
             try {
-                const response = await axios.get(`http://localhost:8080/prediction/match/${matchId}`);
+                const response = await axios.get(`http://localhost:8080/prediction/match/${matchId}/${user.id}`);
                 if (response.data) {
                     setPrediction(response.data.prediction);
                 }
@@ -55,7 +54,6 @@ const MatchDetails = ({ matchId, loggedInUser }) => {
         getMatchPrediction();
     }, [matchId]);
 
-    // Fetch comments for the match
     useEffect(() => {
         const fetchComments = async () => {
             try {
@@ -65,7 +63,6 @@ const MatchDetails = ({ matchId, loggedInUser }) => {
                 console.error('Error fetching comments:', error);
             }
         };
-
         fetchComments();
     }, [matchId]);
 
@@ -97,6 +94,7 @@ const MatchDetails = ({ matchId, loggedInUser }) => {
         const data = {
             prediction: newPrediction,
             matchId,
+            userId: user.id
         };
 
         try {
@@ -270,7 +268,79 @@ const MatchDetails = ({ matchId, loggedInUser }) => {
                 <Box mt={4}>
                     <Accordion>
                         <AccordionDetails>
-                            <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                <Typography variant="subtitle1">
+                                    <strong>Statistics:</strong>
+                                </Typography>
+                                <Divider sx={{ my: 2 }} />
+
+                                <Grid container spacing={2}>
+                                    {Object.keys(matchDetails.homeTeam.statistics).map((stat, index) => {
+                                        const homeValue = matchDetails.homeTeam.statistics[stat];
+                                        const awayValue = matchDetails.awayTeam.statistics[stat];
+                                        const total = parseInt(homeValue) + parseInt(awayValue);
+                                        var homePercentage = 0;
+                                        var awayPercentage = 0;
+
+                                        homePercentage = (homeValue / total) * 50 || 0; // Scale to max 50%
+                                        awayPercentage = (awayValue / total) * 50 || 0; // Scale to max 50%
+
+
+                                        return (
+                                            <Grid item xs={12} key={index}>
+                                                <Typography variant="body1" align="center" sx={{ mb: 1 }}>
+                                                    {stat.replace(/_/g, ' ')}
+                                                </Typography>
+                                                <Box display="flex" alignItems="center" sx={{ mb: 2 }}>
+                                                    {/* Home Value */}
+                                                    <Typography variant="body2" sx={{ width: '15%', textAlign: 'right', pr: 1 }}>
+                                                        {homeValue}
+                                                    </Typography>
+                                                    {/* Bar */}
+                                                    <Box
+                                                        sx={{
+                                                            width: '70%',
+                                                            position: 'relative',
+                                                            height: '12px',
+                                                            backgroundColor: '#f5f5f5',
+                                                            borderRadius: '8px',
+                                                            overflow: 'hidden',
+                                                        }}
+                                                    >
+                                                        {/* Home Team Bar */}
+                                                        <Box
+                                                            sx={{
+                                                                position: 'absolute',
+                                                                left: '50%',
+                                                                transform: 'translateX(-100%)',
+                                                                width: `${homePercentage}%`,
+                                                                backgroundColor: '#007FFF',
+                                                                height: '100%',
+                                                            }}
+                                                        />
+                                                        {/* Away Team Bar */}
+                                                        <Box
+                                                            sx={{
+                                                                position: 'absolute',
+                                                                left: '50%',
+                                                                width: `${awayPercentage}%`,
+                                                                backgroundColor: '#FF5733',
+                                                                height: '100%',
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                    {/* Away Value */}
+                                                    <Typography variant="body2" sx={{ width: '15%', textAlign: 'left', pl: 1 }}>
+                                                        {awayValue}
+                                                    </Typography>
+                                                </Box>
+                                            </Grid>
+                                        );
+                                    })}
+                                </Grid>
+                            </Grid>
+
+                            <Grid container spacing={2} marginTop={2}>
                                 {/* Attendance */}
                                 <Grid item xs={12}>
                                     <Typography variant="subtitle1">

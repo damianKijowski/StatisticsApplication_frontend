@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "./components/login_registration/Login";
 import MainPage from "./components/MainPage";
 import MatchDetails from "./components/MatchDetails";
+import Register from "./components/login_registration/Register"
 import './App.css';
 
 function App() {
@@ -16,6 +17,11 @@ function App() {
                 <Route
                     path="/"
                     element={<Login onLogin={(user) => setLoggedInUser(user)} />}
+                />
+
+                <Route
+                    path="/register"
+                    element={<Register/>}
                 />
 
                 {/* Main Page */}
