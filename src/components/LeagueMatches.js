@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import {
     Typography,
@@ -13,15 +13,18 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Chip,
+    Chip, IconButton
 } from '@mui/material';
+import {Star, StarBorder} from '@mui/icons-material';
 
-const LeagueMatches = ({ leagueCode }) => {
+const LeagueMatches = ({leagueCode}) => {
     const [matches, setMatches] = useState([]);
     const [standings, setStandings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [view, setView] = useState('schedule'); // 'schedule' or 'standings'
+    const [favoriteTeams, setFavoriteTeams] = useState([]);
+    const user = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
         if (!leagueCode) return;
@@ -98,7 +101,12 @@ const LeagueMatches = ({ leagueCode }) => {
                             label={result}
                             size="small"
                             color={color}
-                            style={{ marginRight: index < formString.length - 1 ? 4 : 0, color: '#fff', width: '30px', height: '30px' }}
+                            style={{
+                                marginRight: index < formString.length - 1 ? 4 : 0,
+                                color: '#fff',
+                                width: '30px',
+                                height: '30px'
+                            }}
                         />
                     );
                 })}
@@ -106,11 +114,43 @@ const LeagueMatches = ({ leagueCode }) => {
         );
     };
 
+    useEffect(() => {
+        const fetchFavoriteTeams = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8080/favTeam/${user.id}`);
+                setFavoriteTeams(response.data.map((team) => team.id));
+            } catch (error) {
+                console.error('Error fetching favorite teams:', error);
+            }
+        };
+
+        fetchFavoriteTeams();
+    }, []);
+
+    const handleFavoriteToggle = async (teamId) => {
+        const isFavorite = favoriteTeams.includes(teamId);
+
+        try {
+            if (isFavorite) {
+                await axios.delete(`http://localhost:8080/favTeam/${user.id}/${teamId}`);
+                setFavoriteTeams((prev) => prev.filter((id) => id !== teamId));
+            } else {
+                // Add to favorites
+                await axios.post('http://localhost:8080/favTeam', {
+                    teamId,
+                    userId: user.id,
+                });
+                setFavoriteTeams((prev) => [...prev, teamId]);
+            }
+        } catch (error) {
+            console.error('Error updating favorite teams:', error);
+        }
+    };
 
     if (loading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-                <CircularProgress />
+                <CircularProgress/>
             </Box>
         );
     }
@@ -158,7 +198,7 @@ const LeagueMatches = ({ leagueCode }) => {
                         <Paper
                             key={match.id}
                             elevation={2}
-                            sx={{ padding: 2, marginBottom: 2 }}
+                            sx={{padding: 2, marginBottom: 2}}
                         >
                             <Box display="flex" justifyContent="space-between" alignItems="center">
                                 {/* Teams */}
@@ -168,7 +208,7 @@ const LeagueMatches = ({ leagueCode }) => {
                                         <img
                                             src={match.homeTeam.crest}
                                             alt={`${match.homeTeam.name} crest`}
-                                            style={{ width: '40px', height: '40px', marginRight: '10px' }}
+                                            style={{width: '40px', height: '40px', marginRight: '10px'}}
                                         />
                                         <Typography variant="body1">{match.homeTeam.name}</Typography>
                                     </Box>
@@ -183,7 +223,7 @@ const LeagueMatches = ({ leagueCode }) => {
                                         <img
                                             src={match.awayTeam.crest}
                                             alt={`${match.awayTeam.name} crest`}
-                                            style={{ width: '40px', height: '40px', marginLeft: '10px' }}
+                                            style={{width: '40px', height: '40px', marginLeft: '10px'}}
                                         />
                                     </Box>
                                 </Box>
@@ -218,6 +258,7 @@ const LeagueMatches = ({ leagueCode }) => {
                             <TableRow>
                                 <TableCell>#</TableCell>
                                 <TableCell>Team</TableCell>
+                                <TableCell></TableCell>
                                 <TableCell align="center">Played</TableCell>
                                 <TableCell align="center">Won</TableCell>
                                 <TableCell align="center">Draw</TableCell>
@@ -233,7 +274,7 @@ const LeagueMatches = ({ leagueCode }) => {
                                     <TableRow key={teamData.team.id}>
                                         <TableCell>{teamData.position}</TableCell>
                                         <TableCell>
-                                            <Box display="flex" alignItems="center">
+                                            <Box display="flex" alignItems="left">
                                                 <img
                                                     src={teamData.team.crest}
                                                     alt={`${teamData.team.name} crest`}
@@ -246,6 +287,17 @@ const LeagueMatches = ({ leagueCode }) => {
                                                 {teamData.team.name}
                                             </Box>
                                         </TableCell>
+                                        <TableCell size="medium" align={"left"}>
+                                            <IconButton
+                                                onClick={() => handleFavoriteToggle(teamData.team.id)}
+                                                aria-label="Toggle favorite"
+                                                >
+                                                {favoriteTeams.includes(teamData.team.id) ? (
+                                                    <Star style={{color: 'gold'}}/>
+                                                ) : (
+                                                    <StarBorder/>
+                                                )}
+                                            </IconButton></TableCell>
                                         <TableCell align="center">{teamData.playedGames}</TableCell>
                                         <TableCell align="center">{teamData.won}</TableCell>
                                         <TableCell align="center">{teamData.draw}</TableCell>

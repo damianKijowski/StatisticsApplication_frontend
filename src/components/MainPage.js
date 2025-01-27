@@ -71,7 +71,7 @@ const MainPage = ({ loggedInUser }) => {
                         <LeaguesList onSelectLeague={handleLeagueSelect} />
                     </Grid>
 
-                    <Grid item xs={7}>
+                    <Grid item xs={7.5}>
                         {selectedMatchId || selectedLeague || selectedTeamId ? (
                             <div style={{ marginBottom: '20px' }}>
                                 <IconButton onClick={handleBack} aria-label="back">
@@ -90,7 +90,7 @@ const MainPage = ({ loggedInUser }) => {
                         )}
                     </Grid>
 
-                    <Grid item xs={2.5}>
+                    <Grid item xs={2}>
                         <FavoriteTeams favoriteTeams={favoriteTeams} onTeamClick={handleTeamClick} />
                     </Grid>
                 </Grid>

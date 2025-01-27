@@ -22,6 +22,7 @@ const MatchDetails = ({ matchId, loggedInUser }) => {
     const [comments, setComments] = useState([]);
     const [showLineup, setShowLineup] = useState(false);
     const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
+    const[favoriteTeamId, setFavoriteTeamId] = useState(null);
     const user = JSON.parse(localStorage.getItem('user'));
     // Fetch match details
     useEffect(() => {
@@ -38,7 +39,7 @@ const MatchDetails = ({ matchId, loggedInUser }) => {
         fetchMatchDetails();
     }, [matchId]);
 
-    // Fetch match prediction
+
     useEffect(() => {
         const getMatchPrediction = async () => {
             try {
@@ -88,6 +89,11 @@ const MatchDetails = ({ matchId, loggedInUser }) => {
         } catch (error) {
             console.error('Error submitting comment:', error);
         }
+    };
+
+    const handleFavoriteTeamClick = async () => {
+        await axios.delete(`http://localhost:8080/favTeam/${user.id}/${favoriteTeamId}`);
+        return null;
     };
 
     const setMatchPrediction = async (newPrediction) => {
